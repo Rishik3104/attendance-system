@@ -1,0 +1,8 @@
+tensorflow
+mtcnn
+opencv-python
+pandas
+flask
+numpy
+scipy
+deepface
