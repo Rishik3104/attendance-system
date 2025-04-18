@@ -117,18 +117,32 @@ def register_face(app, labels, faces):
 
     return labels, faces
 
+# Fetch and display unique registered usernames
+def fetch_registered_usernames():
+    labels, _ = load_data()
+    unique_names = set(labels)
+    if unique_names:
+        print("Registered Usernames:")
+        for name in sorted(unique_names):
+            print(f" - {name}")
+    else:
+        print("No registered username found.")
+
 # Main script
 def main():
     labels, faces = load_data()
     app = init_model()
-
+    
+    if input("List registered usernames? (yes/no): ").strip().lower() == 'yes':
+        fetch_registered_usernames()
+        
     if input("Delete existing entry? (yes/no): ").strip().lower() == 'yes':
         labels, faces = delete_entry(labels, faces)
         save_data(labels, faces)
-
+        
     if input("Add new face? (yes/no): ").strip().lower() == 'yes':
         labels, faces = register_face(app, labels, faces)
-
+    
     print("[✓] Done.")
 
 if __name__ == '__main__':
