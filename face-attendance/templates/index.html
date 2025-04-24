@@ -1,11 +1,725 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Face Recognition Attendance</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        #attendance-button {
+            background-color: #2196F3;
+        }
+        #attendance-button:hover {
+            background-color: #0b7dda;
+        }
+        #attendance-button:disabled {
+            background-color: #9fc5e8;
+        }
+        #logs-button {
+            background-color: #ff9800;
+        }
+        #logs-button:hover {
+            background-color: #e68a00;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+        }
+        .success {
+            background-color: #dff0d8;
+            color: #3c763d;
+            border: 1px solid #d6e9c6;
+        }
+        .error {
+            background-color: #f2dede;
+            color: #a94442;
+            border: 1px solid #ebccd1;
+        }
+        .loading {
+            background-color: #d9edf7;
+            color: #31708f;
+            border: 1px solid #bce8f1;
+        }
+        .connection {
+            margin-bottom: 20px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .connected {
+            background-color: #dff0d8;
+            color: #3c763d;
+        }
+        .disconnected {
+            background-color: #f2dede;
+            color: #a94442;
+        }
+        .output-container {
+            margin-top: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+            text-align: left;
+            padding: 10px;
+            background-color: #f8f8f8;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            display: none;
+        }
+        .output-container pre {
+            margin: 0;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        .settings {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        .settings input {
+            padding: 8px;
+            width: 100%;
+            margin-top: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            width: 80%;
+            max-width: 700px;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+        }
+        .date-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 20px 0;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .date-item {
+            padding: 10px 15px;
+            border-bottom: 1px solid #ddd;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .date-item:hover {
+            background-color: #f1f1f1;
+        }
+        .date-item:last-child {
+            border-bottom: none;
+        }
+        .attendance-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .attendance-table th, .attendance-table td {
+            padding: 8px 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        .attendance-table th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        .attendance-table tr:hover {
+            background-color: #f5f5f5;
+        }
+        .back-button {
+            background-color: #607d8b;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 15px;
+        }
+        .back-button:hover {
+            background-color: #546e7a;
+        }
+        .modal-title {
+            margin-top: 0;
+            display: inline-block;
+        }
+        /* Add Face Modal styles */
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .cancel-button {
+            background-color: #ccc;
+        }
+        .submit-button {
+            background-color: #4CAF50;
+        }
+    </style>
 </head>
 <body>
-    <h1>Face Recognition Attendance System</h1>
-    <p>Press 'Enter' to mark attendance.</p>
-    <img src="{{ url_for('video_feed') }}" alt="Video Feed">
+    <div class="container">
+        <h1>Facial Recognition Attendance System</h1>
+        
+        <div class="settings">
+            <label for="api-url">Backend API URL:</label>
+            <input type="text" id="api-url" value="http://127.0.0.1:5000/api/execute" placeholder="http://127.0.0.1:5000/api/execute">
+        </div>
+        
+        <div id="connection-status" class="connection">Checking connection...</div>
+        
+        <div class="buttons">
+            <button id="add-face-button">Add Face</button>
+            <button id="attendance-button">Take Attendance</button>
+            <button id="logs-button">Attendance Logs</button>
+        </div>
+        
+        <div id="status-message" class="status"></div>
+        <div id="output-container" class="output-container">
+            <pre id="output-text"></pre>
+        </div>
+    </div>
+
+    <!-- Add Face Modal -->
+    <div id="add-face-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="add-face-close">&times;</span>
+            <h2 class="modal-title">Add Face</h2>
+            <div id="add-face-content">
+                <div class="form-group">
+                    <label for="person-name">Person Name:</label>
+                    <input type="text" id="person-name" placeholder="Enter name">
+                </div>
+                <div class="modal-buttons">
+                    <button class="cancel-button" id="cancel-add-face">Cancel</button>
+                    <button class="submit-button" id="submit-add-face">Add Face</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logs Modal -->
+    <div id="logs-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 class="modal-title">Attendance Logs</h2>
+            <div id="logs-content">
+                <div id="date-selection">
+                    <h3>Select a date to view attendance:</h3>
+                    <ul id="date-list" class="date-list">
+                        <!-- Dates will be populated here -->
+                    </ul>
+                </div>
+                <div id="attendance-details" style="display: none;">
+                    <button id="back-to-dates" class="back-button">← Back to dates</button>
+                    <h3 id="selected-date">Attendance for Date</h3>
+                    <table class="attendance-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Time</th>
+                            </tr>
+                        </thead>
+                        <tbody id="attendance-data">
+                            <!-- Attendance data will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check connection to backend on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            checkConnection();
+        });
+        
+        // Update API URL when input changes
+        document.getElementById('api-url').addEventListener('change', function() {
+            checkConnection();
+        });
+        
+        function getApiBaseUrl() {
+            const apiUrl = document.getElementById('api-url').value;
+            return apiUrl.replace('/execute', '');
+        }
+        
+        function checkConnection() {
+            const connectionStatus = document.getElementById('connection-status');
+            const baseUrl = getApiBaseUrl();
+            
+            connectionStatus.textContent = 'Checking connection...';
+            connectionStatus.className = 'connection';
+            
+            fetch(`${baseUrl}/health`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => {
+                if (response.ok) {
+                    connectionStatus.textContent = 'Connected to backend server';
+                    connectionStatus.className = 'connection connected';
+                    return;
+                }
+                throw new Error('Backend server not responding');
+            })
+            .catch(error => {
+                connectionStatus.textContent = 'Disconnected: Cannot reach backend server';
+                connectionStatus.className = 'connection disconnected';
+                console.error('Connection error:', error);
+            });
+        }
+
+        // Add Face Modal handling
+        const addFaceModal = document.getElementById('add-face-modal');
+        const addFaceClose = document.getElementById('add-face-close');
+        const addFaceButton = document.getElementById('add-face-button');
+        const cancelAddFaceButton = document.getElementById('cancel-add-face');
+        const submitAddFaceButton = document.getElementById('submit-add-face');
+        const personNameInput = document.getElementById('person-name');
+
+        // Open modal when Add Face button is clicked
+        addFaceButton.addEventListener('click', function() {
+            addFaceModal.style.display = 'block';
+            personNameInput.value = ''; // Clear previous input
+            personNameInput.focus();
+        });
+        
+        // Close modal when clicking the × button
+        addFaceClose.addEventListener('click', function() {
+            addFaceModal.style.display = 'none';
+        });
+
+        // Close modal when clicking Cancel button
+        cancelAddFaceButton.addEventListener('click', function() {
+            addFaceModal.style.display = 'none';
+        });
+
+        // Submit add face when clicking the Add Face button
+        submitAddFaceButton.addEventListener('click', function() {
+            const name = personNameInput.value.trim();
+            if (!name) {
+                alert("Please enter a name");
+                return;
+            }
+            
+            addFaceModal.style.display = 'none';
+            executeAddFaceCommand(name);
+        });
+
+        // Also submit when pressing Enter in the name field
+        personNameInput.addEventListener('keyup', function(event) {
+            if (event.key === 'Enter') {
+                submitAddFaceButton.click();
+            }
+        });
+        
+        function executeAddFaceCommand(name) {
+            // Get UI elements
+            const addFaceButton = document.getElementById('add-face-button');
+            const attendanceButton = document.getElementById('attendance-button');
+            const logsButton = document.getElementById('logs-button');
+            const statusMessage = document.getElementById('status-message');
+            const outputContainer = document.getElementById('output-container');
+            const outputText = document.getElementById('output-text');
+            const apiUrl = document.getElementById('api-url').value;
+            
+            // Disable buttons during execution
+            addFaceButton.disabled = true;
+            attendanceButton.disabled = true;
+            logsButton.disabled = true;
+            
+            // Show loading message
+            statusMessage.textContent = "Adding face...";
+            statusMessage.className = 'status loading';
+            statusMessage.style.display = 'block';
+            
+            // Hide previous output
+            outputContainer.style.display = 'none';
+            
+            // Make API request to backend with the predefined inputs
+            fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ 
+                    command: 'addface',
+                    inputs: ["yes", "no", "yes", name]  // Predefined answers plus the name
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    // Show success message
+                    statusMessage.textContent = `Successfully added face for ${name}`;
+                    statusMessage.className = 'status success';
+                    
+                    // Display output if any
+                    if (data.output && data.output.trim() !== '') {
+                        outputText.textContent = data.output;
+                        outputContainer.style.display = 'block';
+                    }
+                } else {
+                    // Show error message
+                    statusMessage.textContent = `Error: ${data.error}`;
+                    statusMessage.className = 'status error';
+                    
+                    // Display error details if any
+                    if (data.error) {
+                        outputText.textContent = data.error;
+                        outputContainer.style.display = 'block';
+                    }
+                }
+            })
+            .catch(error => {
+                statusMessage.textContent = `Network error: ${error.message}`;
+                statusMessage.className = 'status error';
+                console.error('Fetch error:', error);
+            })
+            .finally(() => {
+                // Re-enable buttons
+                addFaceButton.disabled = false;
+                attendanceButton.disabled = false;
+                logsButton.disabled = false;
+            });
+        }
+
+        document.getElementById('attendance-button').addEventListener('click', function() {
+            executeCommand('attendance', 'Taking attendance...');
+        });
+
+        function executeCommand(command, actionMessage) {
+            // Get UI elements
+            const addFaceButton = document.getElementById('add-face-button');
+            const attendanceButton = document.getElementById('attendance-button');
+            const logsButton = document.getElementById('logs-button');
+            const statusMessage = document.getElementById('status-message');
+            const outputContainer = document.getElementById('output-container');
+            const outputText = document.getElementById('output-text');
+            const apiUrl = document.getElementById('api-url').value;
+            
+            // Disable buttons during execution
+            addFaceButton.disabled = true;
+            attendanceButton.disabled = true;
+            logsButton.disabled = true;
+            
+            // Show loading message
+            statusMessage.textContent = actionMessage;
+            statusMessage.className = 'status loading';
+            statusMessage.style.display = 'block';
+            
+            // Hide previous output
+            outputContainer.style.display = 'none';
+            
+            // Make API request to backend
+            fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ command: command })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    // Show success message
+                    statusMessage.textContent = `Successfully executed ${command} command`;
+                    statusMessage.className = 'status success';
+                    
+                    // Display output if any
+                    if (data.output && data.output.trim() !== '') {
+                        outputText.textContent = data.output;
+                        outputContainer.style.display = 'block';
+                    }
+                } else {
+                    // Show error message
+                    statusMessage.textContent = `Error: ${data.error}`;
+                    statusMessage.className = 'status error';
+                    
+                    // Display error details if any
+                    if (data.error) {
+                        outputText.textContent = data.error;
+                        outputContainer.style.display = 'block';
+                    }
+                }
+            })
+            .catch(error => {
+                statusMessage.textContent = `Network error: ${error.message}`;
+                statusMessage.className = 'status error';
+                console.error('Fetch error:', error);
+            })
+            .finally(() => {
+                // Re-enable buttons
+                addFaceButton.disabled = false;
+                attendanceButton.disabled = false;
+                logsButton.disabled = false;
+            });
+        }
+
+        // Modal handling for logs
+        const logsModal = document.getElementById('logs-modal');
+        const logsModalClose = document.querySelector('#logs-modal .close');
+        const logsButton = document.getElementById('logs-button');
+        const dateSelection = document.getElementById('date-selection');
+        const attendanceDetails = document.getElementById('attendance-details');
+        const backToDateBtn = document.getElementById('back-to-dates');
+        const dateList = document.getElementById('date-list');
+        
+        // Open modal when logs button is clicked
+        logsButton.addEventListener('click', function() {
+            logsModal.style.display = 'block';
+            loadAttendanceDates();
+        });
+        
+        // Close modal when clicking the × button
+        logsModalClose.addEventListener('click', function() {
+            logsModal.style.display = 'none';
+        });
+        
+        // Close modals when clicking outside of them
+        window.addEventListener('click', function(event) {
+            if (event.target === logsModal) {
+                logsModal.style.display = 'none';
+            }
+            if (event.target === addFaceModal) {
+                addFaceModal.style.display = 'none';
+            }
+        });
+        
+        // Back to dates list button
+        backToDateBtn.addEventListener('click', function() {
+            attendanceDetails.style.display = 'none';
+            dateSelection.style.display = 'block';
+        });
+        
+        // Load available attendance dates
+        function loadAttendanceDates() {
+            const apiBaseUrl = getApiBaseUrl();
+            const dateList = document.getElementById('date-list');
+            
+            // Clear previous dates
+            dateList.innerHTML = '<li class="date-item">Loading dates...</li>';
+            
+            // Show date selection, hide attendance details
+            dateSelection.style.display = 'block';
+            attendanceDetails.style.display = 'none';
+            
+            // Fetch available attendance files
+            fetch(`${apiBaseUrl}/attendance-dates`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.dates && data.dates.length > 0) {
+                    // Clear loading message
+                    dateList.innerHTML = '';
+                    
+                    // Sort dates in descending order (newest first)
+                    data.dates.sort().reverse();
+                    
+                    // Add dates to the list
+                    data.dates.forEach(date => {
+                        const dateItem = document.createElement('li');
+                        dateItem.className = 'date-item';
+                        
+                        // Format date for display (assuming format is "DD-MM-YY")
+                        const [day, month, year] = date.split('-');
+                        const formattedDate = `${day}/${month}/20${year}`;
+                        
+                        dateItem.textContent = formattedDate;
+                        dateItem.dataset.date = date;
+                        
+                        dateItem.addEventListener('click', function() {
+                            loadAttendanceData(date);
+                        });
+                        
+                        dateList.appendChild(dateItem);
+                    });
+                } else {
+                    dateList.innerHTML = '<li class="date-item">No attendance records found</li>';
+                }
+            })
+            .catch(error => {
+                dateList.innerHTML = `<li class="date-item">Error loading dates: ${error.message}</li>`;
+                console.error('Error loading attendance dates:', error);
+            });
+        }
+        
+        // Load attendance data for a specific date
+        function loadAttendanceData(date) {
+            const apiBaseUrl = getApiBaseUrl();
+            const attendanceData = document.getElementById('attendance-data');
+            const selectedDate = document.getElementById('selected-date');
+            
+            // Format date for display (assuming format is "DD-MM-YY")
+            const [day, month, year] = date.split('-');
+            const formattedDate = `${day}/${month}/20${year}`;
+            selectedDate.textContent = `Attendance for ${formattedDate}`;
+            
+            // Clear previous data
+            attendanceData.innerHTML = '<tr><td colspan="2">Loading attendance data...</td></tr>';
+            
+            // Show attendance details, hide date selection
+            dateSelection.style.display = 'none';
+            attendanceDetails.style.display = 'block';
+            
+            // Fetch attendance data for the selected date
+            fetch(`${apiBaseUrl}/attendance-data?date=${date}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Clear loading message
+                attendanceData.innerHTML = '';
+                
+                if (data.attendees && data.attendees.length > 0) {
+                    // Add attendance records to the table
+                    data.attendees.forEach(attendee => {
+                        const row = document.createElement('tr');
+                        
+                        const nameCell = document.createElement('td');
+                        nameCell.textContent = attendee.name;
+                        row.appendChild(nameCell);
+                        
+                        const timeCell = document.createElement('td');
+                        timeCell.textContent = attendee.time;
+                        row.appendChild(timeCell);
+                        
+                        attendanceData.appendChild(row);
+                    });
+                } else {
+                    attendanceData.innerHTML = '<tr><td colspan="2">No attendance records for this date</td></tr>';
+                }
+            })
+            .catch(error => {
+                attendanceData.innerHTML = `<tr><td colspan="2">Error loading attendance data: ${error.message}</td></tr>`;
+                console.error('Error loading attendance data:', error);
+            });
+        }
+    </script>
 </body>
 </html>
