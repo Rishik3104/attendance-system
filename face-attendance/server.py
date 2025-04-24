@@ -30,7 +30,7 @@ def execute_command():
         return response
     
     try:
-        # Log received request
+    # Log received request
         print(f"Received request with data: {request.data}")
         
         data = request.json
