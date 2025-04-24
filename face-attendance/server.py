@@ -232,7 +232,7 @@ def signal_handler(sig, frame):
 signal.signal(signal.SIGINT, signal_handler)
 
 if __name__ == '__main__':
-    # Ensure attendance folder path exists
+ # Ensure attendance folder path exists
     if not os.path.exists(ATTENDANCE_FOLDER):
         print(f"Warning: Attendance folder '{ATTENDANCE_FOLDER}' does not exist.")
         print(f"Creating attendance folder at '{ATTENDANCE_FOLDER}'")
