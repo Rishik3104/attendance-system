@@ -11,7 +11,6 @@ import csv
 
 app = Flask(__name__)
 CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
-
 # Configuration
 VENV_PATH = "../venv/bin/activate"
 PYTHON_SCRIPTS = {
