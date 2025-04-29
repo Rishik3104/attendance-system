@@ -17,7 +17,7 @@ This project is an AI-based **automatic attendance system** that uses facial rec
 - [InsightFace](https://github.com/deepinsight/insightface)
 - OpenCV
 - NumPy
-- CSV / SQLite (for storing attendance data)
+- CSV 
 
 
 
