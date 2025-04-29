@@ -19,5 +19,8 @@ This project is an AI-based **automatic attendance system** that uses facial rec
 - NumPy
 - CSV 
 
+##Install the requirements
+pip install -r requirements.txt
+
 
 
