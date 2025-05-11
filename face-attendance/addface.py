@@ -4,6 +4,7 @@ import cv2
 import pickle
 import numpy as np
 from insightface.app import FaceAnalysis
+
 # Constants
 DATA_DIR = 'data/'
 NAMES_FILE = os.path.join(DATA_DIR, 'names.pkl')
